@@ -22,6 +22,8 @@ Closes #[issue number]
 - [ ] Tested edge cases
 - [ ] No console errors
 - [ ] Verified with test data
+- [ ] All tests pass
+- [ ] Coverage ≥ 80%
 
 ## Screenshots/Videos
 [If UI changes]
@@ -32,6 +34,7 @@ Closes #[issue number]
 - [ ] No unnecessary console.logs
 - [ ] Updated relevant documentation
 - [ ] No breaking changes (or documented if any)
+- [ ] Tests written for new code
 
 ## Post-Merge Tasks
 - [ ] Update project board
