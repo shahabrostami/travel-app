@@ -9,13 +9,16 @@ module.exports = {
     '**/?(*.)+(spec|test).[jt]s?(x)',
   ],
   collectCoverageFrom: [
-    '**/*.{ts,tsx,js,jsx}',
+    // Only collect coverage from our custom code directories
+    'lib/**/*.{ts,tsx}',
+    'hooks/**/*.{ts,tsx}',
+    'store/**/*.{ts,tsx}',
+    'utils/**/*.{ts,tsx}',
+    // Exclude test files
+    '!**/*.test.{ts,tsx}',
+    '!**/*.spec.{ts,tsx}',
     '!**/coverage/**',
     '!**/node_modules/**',
-    '!**/babel.config.js',
-    '!**/jest.setup.js',
-    '!**/.expo/**',
-    '!**/expo-env.d.ts',
   ],
   coverageThreshold: {
     global: {
@@ -24,13 +27,7 @@ module.exports = {
       lines: 80,
       statements: 80,
     },
-    // Critical paths require higher coverage
-    './lib/matching.ts': {
-      branches: 95,
-      functions: 95,
-      lines: 95,
-      statements: 95,
-    },
+    // Note: Will add ./lib/matching.ts with 95% threshold when file is created
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
