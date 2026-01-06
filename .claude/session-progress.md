@@ -2,7 +2,7 @@
 
 **Last Updated**: 2026-01-04
 **Current Phase**: Milestone 1 - Foundation
-**Active Branch**: `feature/phase1-supabase-setup`
+**Active Branch**: `main` (ready for next feature)
 
 ---
 
@@ -24,8 +24,8 @@ Building a travel social coordination mobile app that intelligently matches trav
 
 **Milestone 1 - Foundation** (Due: Jan 31, 2026)
 - [x] Issue #2: Project Setup
-- [ ] Issue #3: Supabase Setup (IN PROGRESS)
-- [ ] Issue #4: Authentication Flow
+- [x] Issue #3: Supabase Setup ✅ **MERGED**
+- [ ] Issue #4: Authentication Flow (NEXT)
 - [ ] Issue #5: Basic Navigation
 - [ ] Issue #6: State Management
 - [x] Issue #7: Testing Framework Setup
@@ -61,18 +61,14 @@ Building a travel social coordination mobile app that intelligently matches trav
 - `.github/PULL_REQUEST_TEMPLATE.md` - PR template
 - `.github/ISSUE_TEMPLATE/` - Issue templates
 
----
+### ✅ Phase 1.2: Supabase Database Setup (Merged)
+**PR #8**: Supabase Setup: Complete Database Schema with PostGIS
+**Status**: MERGED to `main` on 2026-01-04
+**Closed Issue**: #3 (Supabase Setup)
 
-## Current Work
+**What was completed**:
 
-### 🟡 Phase 1.2: Supabase Setup (Issue #3)
-**Branch**: `feature/phase1-supabase-setup`
-**Status**: READY FOR COMMIT
-**Started**: 2026-01-04
-
-**Progress**: ALL FILES CREATED, AWAITING COMMIT
-
-**Files created** (not yet committed):
+**Files created**:
 ```
 supabase/
 ├── migrations/
@@ -165,11 +161,64 @@ SUPABASE_SETUP.md                        ✅ COMPLETE
 
 ---
 
+## Current Work
+
+### 🟡 Manual Supabase Setup (Required Before Issue #4)
+**Status**: AWAITING USER ACTION
+**Dependencies**: PR #8 merged ✅
+
+**Next Steps**:
+1. **Create Supabase Project** (5 min)
+   - Go to https://supabase.com/dashboard
+   - Click "New Project"
+   - Name: `travel-app`
+   - Save database password securely
+   - Choose region closest to target users
+   - Wait 2-3 minutes for provisioning
+
+2. **Enable PostGIS Extension** (1 min)
+   - Go to SQL Editor
+   - Run: `CREATE EXTENSION IF NOT EXISTS postgis;`
+   - Verify: `SELECT PostGIS_Version();`
+
+3. **Run Database Migrations** (5 min)
+   - Copy/paste each file into SQL Editor and run in order:
+     - `supabase/migrations/001_initial_schema.sql`
+     - `supabase/migrations/002_matching_functions.sql`
+     - `supabase/migrations/003_rls_policies.sql`
+     - `supabase/migrations/004_materialized_views.sql`
+
+4. **Seed Interest Data** (1 min)
+   - Run: `supabase/seed/001_interests_taxonomy.sql`
+   - Verify: `SELECT COUNT(*) FROM interests;` (should be 150+)
+
+5. **Copy API Keys** (2 min)
+   - Go to Project Settings → API
+   - Create `.env.local` file:
+     ```bash
+     EXPO_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+     EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...
+     ```
+
+**Verification Checklist**:
+- [ ] Supabase project created
+- [ ] PostGIS extension enabled
+- [ ] All 4 migrations run successfully
+- [ ] 150+ interests seeded
+- [ ] API keys in `.env.local`
+- [ ] Test query works (see SUPABASE_SETUP.md)
+
+**Time Estimate**: ~15 minutes
+
+Once complete, we can start Issue #4 (Authentication Flow).
+
+---
+
 ## Pending Work
 
 ### 🔵 Phase 1.3: Authentication Flow (Issue #4)
-**Status**: BLOCKED by Issue #3
-**Dependencies**: Requires Supabase project to be created
+**Status**: READY (waiting for Supabase setup)
+**Dependencies**: Requires manual Supabase project setup (see Current Work above)
 
 **Planned work**:
 1. Create `lib/supabase.ts` - Supabase client with AsyncStorage
