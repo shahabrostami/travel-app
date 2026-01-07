@@ -1,8 +1,7 @@
 -- Enable PostGIS extension for geospatial queries
 CREATE EXTENSION IF NOT EXISTS postgis;
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: Using gen_random_uuid() (built-in PostgreSQL 13+) instead of uuid-ossp
 
 -- ============================================================================
 -- CORE TABLES
@@ -40,7 +39,7 @@ CREATE TABLE profiles (
 
 -- Interest categories (taxonomy)
 CREATE TABLE interest_categories (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL UNIQUE,
   slug TEXT NOT NULL UNIQUE,
   description TEXT,
@@ -51,7 +50,7 @@ CREATE TABLE interest_categories (
 
 -- Interests (100-200 total)
 CREATE TABLE interests (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   category_id UUID NOT NULL REFERENCES interest_categories(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -64,7 +63,7 @@ CREATE TABLE interests (
 
 -- User interests (many-to-many with proficiency)
 CREATE TABLE user_interests (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   interest_id UUID NOT NULL REFERENCES interests(id) ON DELETE CASCADE,
   proficiency TEXT CHECK (proficiency IN ('beginner', 'intermediate', 'expert')),
@@ -75,7 +74,7 @@ CREATE TABLE user_interests (
 
 -- Itineraries (travel plans)
 CREATE TABLE itineraries (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -102,7 +101,7 @@ CREATE TABLE itineraries (
 -- Itinerary items (cities/locations within an itinerary)
 -- CRITICAL: Uses PostGIS geography type for geospatial queries
 CREATE TABLE itinerary_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   itinerary_id UUID NOT NULL REFERENCES itineraries(id) ON DELETE CASCADE,
 
   -- Location (PostGIS)
@@ -141,7 +140,7 @@ CREATE TABLE itinerary_items (
 
 -- Meetups (events/gatherings)
 CREATE TABLE meetups (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   organizer_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
 
   -- Basic info
@@ -189,7 +188,7 @@ CREATE TABLE meetups (
 
 -- Meetup attendees (RSVPs)
 CREATE TABLE meetup_attendees (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   meetup_id UUID NOT NULL REFERENCES meetups(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
 
@@ -209,7 +208,7 @@ CREATE TABLE meetup_attendees (
 
 -- User connections (trust network and blocking)
 CREATE TABLE user_connections (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   connected_user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
 
@@ -229,7 +228,7 @@ CREATE TABLE user_connections (
 
 -- Notification queue (for push notifications)
 CREATE TABLE notification_queue (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
 
   -- Notification type
@@ -291,8 +290,7 @@ CREATE INDEX idx_meetups_organizer ON meetups(organizer_id);
 CREATE INDEX idx_meetups_status ON meetups(status);
 CREATE INDEX idx_meetups_visibility ON meetups(visibility);
 CREATE INDEX idx_meetups_type ON meetups(meetup_type);
-CREATE INDEX idx_meetups_geo_temporal ON meetups
-  USING GIST (location, tstzrange(start_time, COALESCE(end_time, start_time + interval '3 hours'), '[]'));
+-- Separate indexes for location and time (combined geo-temporal not supported with COALESCE)
 CREATE INDEX idx_meetups_start_time ON meetups(start_time);
 CREATE INDEX idx_meetups_location ON meetups USING GIST (location);
 
@@ -419,4 +417,3 @@ COMMENT ON TABLE notification_queue IS 'Pending push notifications to be sent vi
 COMMENT ON COLUMN itinerary_items.location IS 'PostGIS geography point for geospatial queries (lat/lng)';
 COMMENT ON COLUMN meetups.location IS 'PostGIS geography point for geospatial queries (lat/lng)';
 COMMENT ON INDEX idx_itinerary_items_geo_temporal IS 'Critical index for finding itinerary overlaps by location and time';
-COMMENT ON INDEX idx_meetups_geo_temporal IS 'Critical index for finding nearby meetups by location and time';
